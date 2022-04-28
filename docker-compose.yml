@@ -1,0 +1,71 @@
+version: "2"
+
+volumes:
+  postgres:
+
+services:
+
+  #
+  # メインコンテナ
+  #
+  app:
+    tty: true
+    stdin_open: true
+    build: .
+    image: rails_react_example
+
+    depends_on:
+      - postgres
+      # - webpacker
+
+    volumes:
+      - .:/app:cached
+      - postgres:/var/run/postgresql
+
+    ports:
+      - "3000:3000"
+
+    environment:
+      TZ: Asia/Tokyo
+      RAILS_ENV: development
+      PORT: 3000
+      RAILS_LOG_TO_STDOUT: 'true'
+      RAILS_MAX_THREADS: 2
+      WEBPACKER_DEV_SERVER_HOST: webpacker
+      WEBPACKER_DEV_SERVER_PORT: 3035
+      # WEBPACKER_DEV_SERVER_INLINE: 'true'
+
+    command: rails s -b 0.0.0.0
+
+  # webpacker:
+  #   build: .
+  #   image: rails_react_example
+  #   volumes:
+  #     - .:/app:cached
+  #   ports:
+  #     - "3035:3035"
+  #   environment:
+  #     TZ: Asia/Tokyo
+  #     RAILS_ENV: development
+  #     PORT: 3000
+  #     RAILS_LOG_TO_STDOUT: 'true'
+  #     RAILS_MAX_THREADS: 2
+  #     WEBPACKER_DEV_SERVER_HOST: 0.0.0.0
+  #     WEBPACKER_DEV_SERVER_PORT: 3035
+  #   command: bin/webpack-dev-server
+  #
+  # PostgreSQLのコンテナ
+  #
+  postgres:
+    image: postgres:9.6.8
+
+    environment:
+      - "POSTGRES_USER=root"
+
+    volumes:
+      # - "./Dockerfiles/postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d"
+      - postgres:/var/run/postgresql
+      - .:/app:cached
+
+    ports:
+      - "127.0.0.1:5433:5432"
